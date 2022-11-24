@@ -52,7 +52,7 @@ func TestEncodeAes(t *testing.T) {
 		if err != nil {
 			t.Errorf("创建加密实例错误:%s", err.Error())
 		} else {
-			err := eaes.AesEncrypt(tt.data)
+			err := eaes.Encrypt(tt.data)
 			if err != nil {
 				t.Errorf("加密错误:%s", err.Error())
 			} else {
@@ -60,7 +60,7 @@ func TestEncodeAes(t *testing.T) {
 				if err != nil {
 					t.Errorf("创建解密实例错误:%s", err.Error())
 				} else {
-					err := daes.AesDecrypt(eaes.Ciphertext)
+					err := daes.Decrypt(eaes.Ciphertext)
 					if err != nil {
 						t.Errorf("解密错误:%s", err.Error())
 					} else {
