@@ -9,12 +9,10 @@ import (
 )
 
 type Micaes struct {
-	key        []byte       //密钥，长度必须为16,24或32
-	iv         []byte       //初始向量 Initialization Vector,长度必须等于key
-	block      cipher.Block //
-	blocksize  int          //加密块的长度
-	Plaintext  string       //平文
-	Ciphertext string       //密文
+	key       []byte       //密钥，长度必须为16,24或32
+	iv        []byte       //初始向量 Initialization Vector,长度必须等于key
+	block     cipher.Block //
+	blocksize int          //加密块的长度
 }
 
 //创建一个加密解密结构
@@ -113,7 +111,7 @@ func (ma *Micaes) ivPadding(iv []byte, autopadding bool) error {
 		return nil
 	}
 	//如果设定的初始向量长度大于加密块的长度
-	if ivlen > ma.blocksize {
+	if ivlen >= ma.blocksize {
 		ma.iv = iv[:ma.blocksize] //取前 blocksize个字符
 		return nil
 	} else {
@@ -157,8 +155,7 @@ func (ma *Micaes) pkcs7UnPadding(data []byte) ([]byte, error) {
 }
 
 //Encrypt 加密
-func (ma *Micaes) Encrypt(plaintext string) error {
-	ma.Plaintext = plaintext
+func (ma *Micaes) Encrypt(plaintext string) string {
 	//填充
 	encryptBytes := ma.pkcs7Padding([]byte(plaintext))
 	//初始化加密数据接收切片
@@ -168,19 +165,17 @@ func (ma *Micaes) Encrypt(plaintext string) error {
 	//执行加密
 	blockMode.CryptBlocks(crypted, encryptBytes)
 	//Base64加密
-	ma.Ciphertext = base64.StdEncoding.EncodeToString(crypted)
-	return nil
+	return base64.StdEncoding.EncodeToString(crypted)
 }
 
 //Decrypt 解密
-func (ma *Micaes) Decrypt(ciphertext string) error {
+func (ma *Micaes) Decrypt(ciphertext string) (string, error) {
 	//Base64 解密
 	dataByte, err := base64.StdEncoding.DecodeString(ciphertext)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	ma.Ciphertext = ciphertext
 	//使用cbc
 	blockMode := cipher.NewCBCDecrypter(ma.block, ma.iv)
 	//初始化解密数据接收切片
@@ -190,8 +185,7 @@ func (ma *Micaes) Decrypt(ciphertext string) error {
 	//去除填充
 	crypted, err = ma.pkcs7UnPadding(crypted)
 	if err != nil {
-		return err
+		return "", err
 	}
-	ma.Plaintext = string(crypted)
-	return nil
+	return string(crypted), nil
 }

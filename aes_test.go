@@ -52,25 +52,41 @@ func TestEncodeAes(t *testing.T) {
 		if err != nil {
 			t.Errorf("创建加密实例错误:%s", err.Error())
 		} else {
-			err := eaes.Encrypt(tt.data)
+			ciphertext := eaes.Encrypt(tt.data)
+			daes, err := NewMicaes(tt.key, tt.iv, true)
 			if err != nil {
-				t.Errorf("加密错误:%s", err.Error())
+				t.Errorf("创建解密实例错误:%s", err.Error())
 			} else {
-				daes, err := NewMicaes(tt.key, tt.iv, true)
+				plaintext, err := daes.Decrypt(ciphertext)
 				if err != nil {
-					t.Errorf("创建解密实例错误:%s", err.Error())
+					t.Errorf("解密错误:%s", err.Error())
 				} else {
-					err := daes.Decrypt(eaes.Ciphertext)
-					if err != nil {
-						t.Errorf("解密错误:%s", err.Error())
-					} else {
-						t.Logf("原文:%s,len=%d", tt.data, len(tt.data))
-						t.Logf("密文:%s,len=%d", eaes.Ciphertext, len(eaes.Ciphertext))
-						t.Logf("解密文:%s,len=%d", daes.Plaintext, len(daes.Plaintext))
-					}
+					t.Logf("原文:%s,len=%d", tt.data, len(tt.data))
+					t.Logf("密文:%s,len=%d", ciphertext, len(ciphertext))
+					t.Logf("解密文:%s,len=%d", plaintext, len(plaintext))
 				}
 			}
 		}
 
+	}
+}
+
+func TestEncode(t *testing.T) {
+	aes, err := NewMicaes("abcdefebdkhgidhe", "1234567890abcdef") //创建结构
+	if err != nil {
+		t.Errorf("发生错误:%s", err.Error())
+	} else {
+		ciphertext := aes.Encrypt("其实，奥观海、川建国、拜振华都是我们的特工")
+		t.Logf("密文是:%s", ciphertext)
+	}
+}
+
+func TestDecode(t *testing.T) {
+	aes, err := NewMicaes("abcdefebdkhgidhe", "1234567890abcdef") //创建结构
+	if err != nil {
+		t.Errorf("发生错误:%s", err.Error())
+	} else {
+		plaintext, _ := aes.Decrypt("WvpDEr51eH5PagDCI4l2FGVOni4a1oVuyREYogfU/8QqkZYcmDAxQ1o7tMyOz9g0hZEbpNuoogZYoJbzo+8UYQ==")
+		t.Logf("我的秘密是:%s", plaintext)
 	}
 }
