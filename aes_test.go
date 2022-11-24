@@ -1,6 +1,12 @@
 package micaes
 
-import "testing"
+import (
+	"crypto/md5"
+	"fmt"
+	"net/url"
+	"testing"
+	"time"
+)
 
 func TestInit(t *testing.T) {
 	tests := []struct {
@@ -72,21 +78,46 @@ func TestEncodeAes(t *testing.T) {
 }
 
 func TestEncode(t *testing.T) {
-	aes, err := NewMicaes("abcdefebdkhgidhe", "1234567890abcdef") //创建结构
+	aes, err := NewMicaes("fae454f6498b9138109ebb972ef917e7", "fae454f6498b9138109ebb972ef917e7") //创建结构
 	if err != nil {
 		t.Errorf("发生错误:%s", err.Error())
 	} else {
-		ciphertext := aes.Encrypt("其实，奥观海、川建国、拜振华都是我们的特工")
+		ciphertext := aes.Encrypt("select * from sys_unit where id >? AND id <= ?")
 		t.Logf("密文是:%s", ciphertext)
 	}
 }
 
 func TestDecode(t *testing.T) {
-	aes, err := NewMicaes("abcdefebdkhgidhe", "1234567890abcdef") //创建结构
+	aes, err := NewMicaes("fae454f6498b9138109ebb972ef917e7", "fae454f6498b9138109ebb972ef917e7") //创建结构
 	if err != nil {
 		t.Errorf("发生错误:%s", err.Error())
 	} else {
-		plaintext, _ := aes.Decrypt("WvpDEr51eH5PagDCI4l2FGVOni4a1oVuyREYogfU/8QqkZYcmDAxQ1o7tMyOz9g0hZEbpNuoogZYoJbzo+8UYQ==")
+		plaintext, _ := aes.Decrypt("pDxa5PYrkhvKYe9FMccx+QysRdQYuudq7faC7z+SG+qw7dsNlpfQkZmqi8pm9OOO")
 		t.Logf("我的秘密是:%s", plaintext)
+	}
+}
+
+func TestSQLEncode(t *testing.T) {
+	tstamp := time.Now()
+	sec := tstamp.Minute()*60 + tstamp.Second()
+	tdata := fmt.Sprint(tstamp.Unix() - int64(sec))
+	has := md5.Sum([]byte(tdata))
+	key := fmt.Sprintf("%x", has)
+
+	t.Logf("时间戳:%s", tdata)
+	sql := "select * from sys_unit where id >? AND id <= ?"
+	args := "3,5"
+	uri := "/api/script/sql/cypher"
+	sign := fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf("%s%s%d%s", sql, uri, len(sql), args))))
+
+	t.Logf("Key=%s", key)
+	t.Logf("Sign=%s", sign)
+	aes, err := NewMicaes(key, sign) //创建结构
+	if err != nil {
+		t.Errorf("发生错误:%s", err.Error())
+	} else {
+		plaintext := aes.Encrypt(sql)
+		t.Logf("我的秘密是:%s", plaintext)
+		t.Logf("URL Encode:%s", url.QueryEscape(plaintext))
 	}
 }

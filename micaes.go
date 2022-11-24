@@ -151,6 +151,9 @@ func (ma *Micaes) pkcs7UnPadding(data []byte) ([]byte, error) {
 	}
 	//获取填充的个数
 	unPadding := int(data[length-1])
+	if unPadding < 0 || unPadding > length {
+		return nil, fmt.Errorf("unPadding length %d out of range", unPadding)
+	}
 	return data[:(length - unPadding)], nil
 }
 
