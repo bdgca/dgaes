@@ -147,9 +147,10 @@ func (ma *Micaes) pkcs7Padding(data []byte) []byte {
 func (ma *Micaes) pkcs7UnPadding(data []byte) ([]byte, error) {
 	length := len(data)
 	if length == 0 {
-		return nil, fmt.Errorf("加密字符串错误！")
+		return nil, fmt.Errorf("cyphertext length is zero")
 	}
 	//获取填充的个数
+	//fmt.Printf("需要解密的数据:%s,数据长度:%d,最后一个值:%s\n", string(data), length, string(data[length-1]))
 	unPadding := int(data[length-1])
 	if unPadding < 0 || unPadding > length {
 		return nil, fmt.Errorf("unPadding length %d out of range", unPadding)

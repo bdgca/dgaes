@@ -98,12 +98,17 @@ func TestDecode(t *testing.T) {
 }
 
 func TestSQLEncode(t *testing.T) {
-	tstamp := time.Now()
+	tstamp := time.Now().Local()
+	//_,zofset:=tstamp.Zone()
+	//tstamp = tstamp.Add(time.Second * time.Duration(zofset))
+
 	sec := tstamp.Minute()*60 + tstamp.Second()
-	tdata := fmt.Sprint(tstamp.Unix() - int64(sec))
+	tdata := fmt.Sprint(tstamp.Local().Unix() - int64(sec))
 	has := md5.Sum([]byte(tdata))
 	key := fmt.Sprintf("%x", has)
-
+	
+	t.Logf("时间戳  UTC:%d,%v", tstamp.UTC().Unix(), tstamp.UTC())
+	t.Logf("时间戳Local:%d,%v", tstamp.Unix(), tstamp.Local())
 	t.Logf("时间戳:%s", tdata)
 	sql := "select * from sys_unit where id >? AND id <= ?"
 	args := "3,5"
