@@ -126,3 +126,9 @@ func TestSQLEncode(t *testing.T) {
 		t.Logf("URL Encode:%s", url.QueryEscape(plaintext))
 	}
 }
+
+func TestTime(t *testing.T){
+	nowt:=time.Now()
+	t.Logf("UTC 时间Unix:%d,UTC时间:%v",nowt.UTC().Unix(),nowt.UTC())
+	t.Logf("北京时间Unix:%d,北京时间:%v",nowt.Local().Unix(),nowt.Local())
+}
